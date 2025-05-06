@@ -1,8 +1,10 @@
-// --- Registro del Service Worker ---
-if ('serviceWorker' in navigator) {
+// --- Registro del Service Worker (solo en HTTPS o localhost) ---
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   navigator.serviceWorker.register('service-worker.js')
     .then(reg => console.log('SW registrado, scope:', reg.scope))
     .catch(err => console.error('Error registrando SW:', err));
+} else {
+  console.warn('Service Worker requiere HTTPS o localhost. No se registró.');
 }
 
 // --- Elementos del DOM ---
@@ -59,22 +61,27 @@ sendInputBtn.addEventListener('click', () => {
   sendPushNotification(num);
 });
 
-// --- 4) Obtener un número de una API gratuita y notificar ---
-async function fetchRandomNumber() {
-  // API gratuita que devuelve un array con un número aleatorio de dos dígitos
-  const response = await fetch('https://www.randomnumberapi.com/api/v1.0/random?min=10&max=99&count=1');
-  if (!response.ok) throw new Error('Error al obtener número de la API');
-  const data = await response.json();
-  return data[0];
+// --- 4) Simular llamada a API con setTimeout ---
+function simulateApiCall() {
+  return new Promise((resolve) => {
+    // Simulamos 2 segundos de retraso como si fuera una llamada real
+    setTimeout(() => {
+      // Generamos un número aleatorio de dos dígitos
+      const randomNum = Math.floor(Math.random() * 90) + 10;
+      resolve(randomNum);
+    }, 2000);
+  });
 }
 
 fetchAndNotifyBtn.addEventListener('click', async () => {
   try {
-    const randomNum = await fetchRandomNumber();
+    console.log('Simulando llamada a API...');
+    const randomNum = await simulateApiCall();
+    console.log('Número recibido de la "API":', randomNum);
     sendPushNotification(randomNum);
   } catch (err) {
-    console.error(err);
-    alert('No se pudo obtener el número de la API.');
+    console.error('Error en la simulación de API:', err);
+    alert('Ocurrió un error al simular la llamada a la API.');
   }
 });
 
